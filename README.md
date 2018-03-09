@@ -2,6 +2,6 @@
 A C# vJoy feeder using SharpJoycon
 
 # Requirements
+* SharpJoycon
 * Windows
 * vJoy (probably latest)
-* Other requirements from SharpJoycon
