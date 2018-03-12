@@ -103,6 +103,7 @@ namespace JoyconGlue
                     case ControllerType.RightJoycon:
                         Console.WriteLine("Right Joycon detected.");
                         rightJoycon = controller;
+                        controller.GetHomeLED().SendPattern(HomeLEDInterface.GetHeartbeatPattern());
                         break;
                     default:
                         Console.WriteLine("Unrecognized device.");
