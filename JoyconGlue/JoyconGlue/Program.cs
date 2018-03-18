@@ -10,6 +10,7 @@ using SharpJoycon;
 using SharpJoycon.Interfaces;
 using static SharpJoycon.Interfaces.HardwareInterface;
 using SharpJoycon.Interfaces.Joystick;
+using static SharpJoycon.Interfaces.Joystick.InputJoystick;
 
 namespace JoyconGlue
 {
@@ -119,22 +120,45 @@ namespace JoyconGlue
             joystick.ResetVJD(vjd);
             Console.WriteLine("Starting update loop...");
             JoystickState iReport;
+
             while (true)
             {
                 iReport = new JoystickState();
+
+                // make all of them -1 (no angle)
+                iReport.bHatsEx1--;
+                iReport.bHatsEx2--;
+                iReport.bHatsEx3--;
+
                 joycons.Poll();
 
                 //buttons
                 iReport.Buttons = joycons.GetButtonData();
 
                 //pov
-                uint pov = 0x7FFFFFF0; // set all but the 4 least significant bits to 1
-                pov = pov | ((uint)joycons.GetPov()) - 1;
-                iReport.bHats = pov;
+                double pov = -1;
+                List<POVDirection> dirs = joycons.GetPov();
+                foreach (POVDirection dir in dirs)
+                {
+                    pov += GetPOVMultiplier(dir);
+                }
+
+                // top left POV
+                if (pov == 7 && dirs.Count > 1)
+                {
+                    pov = 13;
+                }
+
+                // take average of all directions
+                if (dirs.Count > 0)
+                    pov /= dirs.Count;
+
+                uint finalPov = (uint)(pov * 4487.5); // convert to angle
+                iReport.bHats = finalPov;
 
                 //sticks
-                InputJoystick.StickPos leftPos = joycons.GetStick(0);
-                InputJoystick.StickPos rightPos = joycons.GetStick(1);
+                StickPos leftPos = joycons.GetStick(0);
+                StickPos rightPos = joycons.GetStick(1);
                 iReport.AxisX = leftPos.x;
                 iReport.AxisY = leftPos.y;
                 iReport.AxisXRot = rightPos.x;
