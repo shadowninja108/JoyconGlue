@@ -136,29 +136,11 @@ namespace JoyconGlue
                 iReport.Buttons = joycons.GetButtonData();
 
                 //pov
-                double pov = -1;
-                List<POVDirection> dirs = joycons.GetPov();
-                foreach (POVDirection dir in dirs)
-                {
-                    pov += GetPOVMultiplier(dir);
-                }
-
-                // top left POV
-                if (pov == 7 && dirs.Count > 1)
-                {
-                    pov = 13;
-                }
-
-                // take average of all directions
-                if (dirs.Count > 0)
-                    pov /= dirs.Count;
-
-                uint finalPov = (uint)(pov * 4487.5); // convert to angle
-                iReport.bHats = finalPov;
+                iReport.bHats = (uint) (GetPOVMultiplier(joycons.GetPov()) * 4487.5);
 
                 //sticks
-                StickPos leftPos = joycons.GetStick(0);
-                StickPos rightPos = joycons.GetStick(1);
+                Position leftPos = joycons.GetStick(0);
+                Position rightPos = joycons.GetStick(1);
                 iReport.AxisX = leftPos.x;
                 iReport.AxisY = leftPos.y;
                 iReport.AxisXRot = rightPos.x;
