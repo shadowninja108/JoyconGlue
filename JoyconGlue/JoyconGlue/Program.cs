@@ -9,7 +9,6 @@ using static vJoyInterfaceWrap.vJoy;
 using SharpJoycon;
 using SharpJoycon.Interfaces;
 using static SharpJoycon.Interfaces.HardwareInterface;
-using SharpJoycon.Interfaces.Joystick;
 using static SharpJoycon.Interfaces.Joystick.InputJoystick;
 
 namespace JoyconGlue
