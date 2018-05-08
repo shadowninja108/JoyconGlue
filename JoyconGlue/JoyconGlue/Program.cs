@@ -10,6 +10,7 @@ using SharpJoycon;
 using SharpJoycon.Interfaces;
 using static SharpJoycon.Interfaces.HardwareInterface;
 using static SharpJoycon.Interfaces.Joystick.InputJoystick;
+using SharpJoycon.Interfaces.SPI;
 
 namespace JoyconGlue
 {
@@ -125,6 +126,8 @@ namespace JoyconGlue
                 iReport = new JoystickState();
 
                 // make all of them -1 (no angle)
+                // also aren't these all uints? wouldn't it just underflow?
+                // it works tho
                 iReport.bHatsEx1--;
                 iReport.bHatsEx2--;
                 iReport.bHatsEx3--;
