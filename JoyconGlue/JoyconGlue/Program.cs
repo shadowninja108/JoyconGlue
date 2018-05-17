@@ -10,7 +10,7 @@ using SharpJoycon;
 using SharpJoycon.Interfaces;
 using static SharpJoycon.Interfaces.HardwareInterface;
 using static SharpJoycon.Interfaces.Joystick.InputJoystick;
-using SharpJoycon.Interfaces.SPI;
+using SharpJoycon.Interfaces.Joystick.Controllers;
 
 namespace JoyconGlue
 {
@@ -19,7 +19,7 @@ namespace JoyconGlue
         static vJoy joystick;
         static uint vjd;
         static List<NintendoController> controllers;
-        static GluedJoycons joycons;
+        static Controller controller;
 
         static void Main(string[] args)
         {
@@ -87,10 +87,11 @@ namespace JoyconGlue
             Console.WriteLine("Applying some glue...");
             NintendoController leftJoycon = null;
             NintendoController rightJoycon = null;
+            NintendoController proController = null;
             foreach (NintendoController controller in controllers)
             {
                 HardwareInterface hardware = controller.GetHardware();
-                hardware.SetReportMode(0x3F); // normal HID mode (should help with SPI reads)
+                hardware.SetReportMode(0x30); // 60hz update mode
                 hardware.SetVibration(true);
                 hardware.SetIMU(true);
                 hardware.SetPlayerLights(PlayerLightState.Player1);
@@ -106,13 +107,23 @@ namespace JoyconGlue
                         rightJoycon = controller;
                         controller.GetHomeLED().SendPattern(HomeLEDInterface.GetHeartbeatPattern());
                         break;
+                    case ControllerType.ProController:
+                        Console.WriteLine("Pro Controller detected.");
+                        controller.GetHomeLED().SendPattern(HomeLEDInterface.GetHeartbeatPattern());
+                        proController = controller;
+                        // incomplete
+                        break;
                     default:
                         Console.WriteLine("Unrecognized device.");
                         break;
                 }
-                hardware.SetReportMode(0x30); // 60hz update mode
             }
-            joycons = new GluedJoycons(leftJoycon, rightJoycon);
+
+            if (proController != null)
+                controller = proController.GetController().GetJoystick();
+            else
+                controller = leftJoycon.GetController().CombineWith(rightJoycon);
+            
         }
 
         public static void vJoyLoop()
@@ -132,24 +143,24 @@ namespace JoyconGlue
                 iReport.bHatsEx2--;
                 iReport.bHatsEx3--;
 
-                joycons.Poll();
+                controllers.ForEach((c) => c.Poll());
 
                 //buttons
-                iReport.Buttons = joycons.GetButtonData();
+                iReport.Buttons = controller.GetButtonData();
 
                 //pov
-                iReport.bHats = (uint) (GetPOVMultiplier(joycons.GetPov()) * 4487.5);
+                iReport.bHats = (uint) (GetPOVMultiplier(controller.GetPov(0)) * 4487.5);
 
                 //sticks
-                Position leftPos = joycons.GetStick(0);
-                Position rightPos = joycons.GetStick(1);
+                Position leftPos = controller.GetStick(0);
+                Position rightPos = controller.GetStick(1);
                 iReport.AxisX = leftPos.x;
                 iReport.AxisY = leftPos.y;
                 iReport.AxisXRot = rightPos.x;
                 iReport.AxisYRot = rightPos.y;
 
                 joystick.UpdateVJD(vjd, ref iReport);
-                Thread.Sleep((1 / 60) * 1000); // joycons update @ 60hz
+                //Thread.Sleep((1 / 60) * 1000); // joycons update @ 60hz
             }
         }
     }
