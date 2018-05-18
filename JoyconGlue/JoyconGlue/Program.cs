@@ -95,6 +95,8 @@ namespace JoyconGlue
                 hardware.SetVibration(true);
                 hardware.SetIMU(true);
                 hardware.SetPlayerLights(PlayerLightState.Player1);
+                HomeLEDInterface homeLED = controller.GetHomeLED();
+                homeLED.SendPattern(HomeLEDInterface.GetHeartbeatPattern());
 
                 switch (hardware.GetControllerType())
                 {
@@ -105,13 +107,10 @@ namespace JoyconGlue
                     case ControllerType.RightJoycon:
                         Console.WriteLine("Right Joycon detected.");
                         rightJoycon = controller;
-                        controller.GetHomeLED().SendPattern(HomeLEDInterface.GetHeartbeatPattern());
                         break;
                     case ControllerType.ProController:
                         Console.WriteLine("Pro Controller detected.");
-                        controller.GetHomeLED().SendPattern(HomeLEDInterface.GetHeartbeatPattern());
                         proController = controller;
-                        // incomplete
                         break;
                     default:
                         Console.WriteLine("Unrecognized device.");
